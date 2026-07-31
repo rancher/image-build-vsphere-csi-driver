@@ -36,10 +36,12 @@ RUN if [ "$(xx-info arch)" = "amd64" ]; then \
 # manager, so install into a rootfs with zypper on bci-base and copy it in.
 # Matches the upstream driver image:
 # https://github.com/kubernetes-sigs/vsphere-csi-driver/blob/master/images/driver/Dockerfile
-# nfs-client : mount helpers for NFS-backed volumes (mount.nfs)
-# util-linux : filesystem/partition tooling (mount, blkid, lsblk, ...)
-# e2fsprogs  : ext2/3/4 filesystem utilities (mkfs.ext4, e2fsck, ...)
-# xfsprogs   : XFS filesystem utilities (mkfs.xfs, xfs_repair, ...)
+# nfs-client         : mount helpers for NFS-backed volumes (mount.nfs)
+# util-linux         : filesystem/partition tooling (mount, blkid, lsblk, ...)
+# util-linux-systemd : filesystem/partition tooling (mount, blkid, lsblk, ...)
+# e2fsprogs          : ext2/3/4 filesystem utilities (mkfs.ext4, e2fsck, ...)
+# xfsprogs           : XFS filesystem utilities (mkfs.xfs, xfs_repair, ...)
+# note that util-linux-systemd is installed directly via rpm without deps to avoid pulling in all of systemd
 FROM ${BCI_BASE_IMAGE} AS csi-packages
 RUN zypper --gpg-auto-import-keys --non-interactive --installroot /installroot refresh && \
     zypper --gpg-auto-import-keys --non-interactive --installroot /installroot install --no-recommends -y \
@@ -47,6 +49,8 @@ RUN zypper --gpg-auto-import-keys --non-interactive --installroot /installroot r
         util-linux \
         e2fsprogs \
         xfsprogs && \
+    zypper --non-interactive download util-linux-systemd && \
+    rpm -i --nodeps --root /installroot /var/cache/zypp/packages/*/*/util-linux-systemd-*.rpm && \
     zypper --non-interactive --installroot /installroot clean --all && \
     rm -rf /installroot/var/log/* /installroot/var/cache/zypp/*
 
