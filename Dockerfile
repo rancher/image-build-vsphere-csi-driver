@@ -41,8 +41,8 @@ RUN if [ "$(xx-info arch)" = "amd64" ]; then \
 # e2fsprogs  : ext2/3/4 filesystem utilities (mkfs.ext4, e2fsck, ...)
 # xfsprogs   : XFS filesystem utilities (mkfs.xfs, xfs_repair, ...)
 FROM ${BCI_BASE_IMAGE} AS csi-packages
-RUN zypper --non-interactive --installroot /installroot refresh && \
-    zypper --non-interactive --installroot /installroot install --no-recommends -y \
+RUN zypper --gpg-auto-import-keys --non-interactive --installroot /installroot refresh && \
+    zypper --gpg-auto-import-keys --non-interactive --installroot /installroot install --no-recommends -y \
         nfs-client \
         util-linux \
         e2fsprogs \
