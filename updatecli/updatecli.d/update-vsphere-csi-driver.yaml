@@ -44,5 +44,9 @@ actions:
     title: 'Bump vsphere-csi-driver version to {{ source "upstream" }}'
     kind: github/pullrequest
     spec:
-      automerge: false
+      merge:
+        strategy: auto
+      labels:
+        - updatecli
+        - github_actions
     scmid: default
