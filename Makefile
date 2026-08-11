@@ -24,9 +24,9 @@ ifeq (,$(filter %$(BUILD_META),$(TAG)))
 $(error TAG $(TAG) needs to end with build metadata: $(BUILD_META))
 endif
 
-.PHONY: build-image-vsphere-csi
-build-image-vsphere-csi: IMAGE = $(REPO)/hardened-vsphere-csi-driver:$(TAG)
-build-image-vsphere-csi:
+.PHONY: build-image-vsphere-csi-driver
+build-image-vsphere-csi-driver: IMAGE = $(REPO)/hardened-vsphere-csi-driver:$(TAG)
+build-image-vsphere-csi-driver:
 	docker buildx build \
 		--platform=$(TARGET_PLATFORMS) \
 		--build-arg PKG=$(PKG) \
@@ -36,9 +36,9 @@ build-image-vsphere-csi:
 		--load \
 	.
 
-.PHONY: push-image-vsphere-csi
-push-image-vsphere-csi: IMAGE = $(REPO)/hardened-vsphere-csi-driver:$(TAG)
-push-image-vsphere-csi:
+.PHONY: push-image-vsphere-csi-driver
+push-image-vsphere-csi-driver: IMAGE = $(REPO)/hardened-vsphere-csi-driver:$(TAG)
+push-image-vsphere-csi-driver:
 	docker buildx build \
 		$(IID_FILE_FLAG) \
 		--sbom=true \
@@ -51,9 +51,9 @@ push-image-vsphere-csi:
 		--push \
 		.
 
-.PHONY: build-image-syncer
-build-image-syncer: IMAGE = $(REPO)/hardened-vsphere-csi-syncer:$(TAG)
-build-image-syncer:
+.PHONY: build-image-vsphere-csi-syncer
+build-image-vsphere-csi-syncer: IMAGE = $(REPO)/hardened-vsphere-csi-syncer:$(TAG)
+build-image-vsphere-csi-syncer:
 	docker buildx build \
 		--platform=$(TARGET_PLATFORMS) \
 		--build-arg PKG=$(PKG) \
@@ -63,9 +63,9 @@ build-image-syncer:
 		--load \
 	.
 
-.PHONY: push-image-syncer
-push-image-syncer: IMAGE = $(REPO)/hardened-vsphere-csi-syncer:$(TAG)
-push-image-syncer:
+.PHONY: push-image-vsphere-csi-syncer
+push-image-vsphere-csi-syncer: IMAGE = $(REPO)/hardened-vsphere-csi-syncer:$(TAG)
+push-image-vsphere-csi-syncer:
 	docker buildx build \
 		$(IID_FILE_FLAG) \
 		--sbom=true \
@@ -79,10 +79,10 @@ push-image-syncer:
 		.
 
 .PHONY: build-image-all
-build-image-all: build-image-vsphere-csi build-image-syncer
+build-image-all: build-image-vsphere-csi-driver build-image-vsphere-csi-syncer
 
 .PHONY: push-image-all
-push-image-all: push-image-vsphere-csi push-image-syncer
+push-image-all: push-image-vsphere-csi-driver push-image-vsphere-csi-syncer
 
 .PHONY: image-scan
 image-scan:
