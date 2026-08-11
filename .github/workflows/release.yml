@@ -33,7 +33,7 @@ jobs:
       with:
         image: hardened-vsphere-csi-driver
         make-target: push-image-vsphere-csi
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         tag: ${{ github.event.release.tag_name }}
         push-to-public: false
         push-to-prime: ${{ github.repository_owner == 'rancher' }}
@@ -65,7 +65,7 @@ jobs:
       with:
         image: hardened-vsphere-csi-syncer
         make-target: push-image-syncer
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         tag: ${{ github.event.release.tag_name }}
         push-to-public: false
         push-to-prime: ${{ github.repository_owner == 'rancher' }}
