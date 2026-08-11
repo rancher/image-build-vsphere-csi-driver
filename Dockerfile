@@ -58,13 +58,11 @@ RUN zypper --gpg-auto-import-keys --non-interactive --installroot /installroot r
 FROM ${BCI_IMAGE} AS vsphere-csi
 LABEL org.opencontainers.image.description="vSphere CSI Driver"
 COPY --from=csi-packages /installroot /
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /usr/local/bin/vsphere-csi /vsphere-csi
 ENTRYPOINT ["/vsphere-csi"]
 
 # vSphere CSI Metadata Syncer
 FROM ${BCI_IMAGE} AS syncer
 LABEL org.opencontainers.image.description="vSphere CSI Metadata Syncer"
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /usr/local/bin/syncer /syncer
 ENTRYPOINT ["/syncer"]
