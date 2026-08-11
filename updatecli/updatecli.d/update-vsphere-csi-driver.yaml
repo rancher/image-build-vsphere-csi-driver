@@ -17,15 +17,15 @@ sources:
         kind: semver
 
 targets:
-  makefile:
-    name: "Bump to latest vsphere-csi-driver version in Makefile"
+  tagfile:
+    name: "Bump to latest vsphere-csi-driver version in TAG file"
     kind: file
     scmid: default
     disablesourceinput: true
     spec:
-      file: Makefile
-      matchpattern: '(?m)^TAG \:\= (.*)'
-      replacepattern: 'TAG := {{ source "upstream" }}$$(BUILD_META)'
+      file: TAG
+      matchpattern: '(?m)^v[0-9]+\.[0-9]+\.[0-9]+$'
+      replacepattern: '{{ source "upstream" }}'
 
 scms:
   default:
