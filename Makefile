@@ -12,7 +12,6 @@ ifndef TARGET_PLATFORMS
 endif
 
 REPO ?= ghcr.io/rancher
-PKG ?= github.com/kubernetes-sigs/vsphere-csi-driver
 BUILD_META=-build$(shell date +%Y%m%d)
 TAG ?= ${GITHUB_ACTION_TAG}
 
@@ -29,7 +28,6 @@ build-image-vsphere-csi-driver: IMAGE = $(REPO)/hardened-vsphere-csi-driver:$(TA
 build-image-vsphere-csi-driver:
 	docker buildx build \
 		--platform=$(TARGET_PLATFORMS) \
-		--build-arg PKG=$(PKG) \
 		--build-arg TAG=$(TAG:$(BUILD_META)=) \
 		--target vsphere-csi \
 		--tag $(IMAGE) \
@@ -44,7 +42,6 @@ push-image-vsphere-csi-driver:
 		--sbom=true \
 		--attest type=provenance,mode=max \
 		--platform=$(TARGET_PLATFORMS) \
-		--build-arg PKG=$(PKG) \
 		--build-arg TAG=$(TAG:$(BUILD_META)=) \
 		--target vsphere-csi \
 		--tag $(IMAGE) \
@@ -56,7 +53,6 @@ build-image-vsphere-csi-syncer: IMAGE = $(REPO)/hardened-vsphere-csi-syncer:$(TA
 build-image-vsphere-csi-syncer:
 	docker buildx build \
 		--platform=$(TARGET_PLATFORMS) \
-		--build-arg PKG=$(PKG) \
 		--build-arg TAG=$(TAG:$(BUILD_META)=) \
 		--target syncer \
 		--tag $(IMAGE) \
@@ -71,7 +67,6 @@ push-image-vsphere-csi-syncer:
 		--sbom=true \
 		--attest type=provenance,mode=max \
 		--platform=$(TARGET_PLATFORMS) \
-		--build-arg PKG=$(PKG) \
 		--build-arg TAG=$(TAG:$(BUILD_META)=) \
 		--target syncer \
 		--tag $(IMAGE) \
@@ -93,7 +88,6 @@ image-scan:
 log:
 	@echo "TARGET_PLATFORMS=$(TARGET_PLATFORMS)"
 	@echo "REPO=$(REPO)"
-	@echo "PKG=$(PKG)"
 	@echo "TAG=$(TAG:$(BUILD_META)=)"
 	@echo "BUILD_META=$(BUILD_META)"
 	@echo "UNAME_M=$(UNAME_M)"
