@@ -9,15 +9,11 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-driver:
     permissions:
       contents: read
       id-token: write
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [vsphere-csi-driver, vsphere-csi-syncer]
-      fail-fast: false
     steps:
     - name: Check out code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -31,13 +27,44 @@ jobs:
         BUILD_META=$(make -s log | grep '^BUILD_META=' | cut -d '=' -f2)
         echo "TAG=${TAG}${BUILD_META}" >> "$GITHUB_ENV"
 
-    - name: Build ${{ matrix.target }} image
-      run: make build-image-${{ matrix.target }}
+    - name: Build vsphere-csi-driver image
+      run: make build-image-vsphere-csi-driver
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
-        image-ref: ghcr.io/rancher/hardened-${{ matrix.target }}:${{ env.TAG }}
+        image-ref: ghcr.io/rancher/hardened-vsphere-csi-driver:${{ env.TAG }}
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+        format: 'table'
+        exit-code: '0'
+
+  build-syncer:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+    - name: Set the TAG value
+      run: |
+        TAG=$(make -s log | grep '^TAG=' | cut -d '=' -f2)
+        BUILD_META=$(make -s log | grep '^BUILD_META=' | cut -d '=' -f2)
+        echo "TAG=${TAG}${BUILD_META}" >> "$GITHUB_ENV"
+
+    - name: Build vsphere-csi-syncer image
+      run: make build-image-vsphere-csi-syncer
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        image-ref: ghcr.io/rancher/hardened-vsphere-csi-syncer:${{ env.TAG }}
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
