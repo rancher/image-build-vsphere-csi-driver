@@ -46,6 +46,25 @@ jobs:
       - name: Install Updatecli
         uses: updatecli/updatecli-action@5dfc616e57b07d2302c3f37e5b72a4ead82dbbf8 # v3.4.0
 
+      - name: Delete leftover UpdateCLI branches
+        run: |
+          gh pr list \
+            --search "is:closed is:pr head:updatecli_" \
+            --json headRefName \
+            --jq ".[].headRefName" | sort -u > closed_prs_branches.txt
+          gh pr list \
+            --search "is:open is:pr head:updatecli_" \
+            --json headRefName \
+            --jq ".[].headRefName" | sort -u > open_prs_branches.txt
+          for branch in $(comm -23 closed_prs_branches.txt open_prs_branches.txt); do
+            if (git ls-remote --exit-code --heads origin "$branch"); then
+              echo "Deleting leftover UpdateCLI branch - $branch";
+              git push origin --delete "$branch";
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Apply Updatecli
         # Never use '--debug' option, because it might leak the access tokens.
         run: "updatecli apply --clean --config ./updatecli/updatecli.d/ --values ./updatecli/values.yaml"
