@@ -41,7 +41,7 @@ jobs:
       uses: rancher/ecm-distro-tools/actions/publish-image@b558c3371d4a363f131e31a87d5c47dae2bbebe7 # v0.75.1
       with:
         image: hardened-vsphere-csi-driver
-        make-target: push-image-vsphere-csi
+        make-target: push-image-vsphere-csi-driver
         platforms: linux/amd64
         tag: ${{ env.RELEASE_TAG }}
         push-to-public: false
@@ -73,7 +73,7 @@ jobs:
       uses: rancher/ecm-distro-tools/actions/publish-image@b558c3371d4a363f131e31a87d5c47dae2bbebe7 # v0.75.1
       with:
         image: hardened-vsphere-csi-syncer
-        make-target: push-image-syncer
+        make-target: push-image-vsphere-csi-syncer
         platforms: linux/amd64
         tag: ${{ env.RELEASE_TAG }}
         push-to-public: false
