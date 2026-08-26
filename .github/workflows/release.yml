@@ -2,6 +2,15 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
 
 permissions:
   contents: read
@@ -34,7 +43,7 @@ jobs:
         image: hardened-vsphere-csi-driver
         make-target: push-image-vsphere-csi
         platforms: linux/amd64
-        tag: ${{ github.event.release.tag_name }}
+        tag: ${{ env.RELEASE_TAG }}
         push-to-public: false
         push-to-prime: ${{ github.repository_owner == 'rancher' }}
         prime-repo: rancher
@@ -66,7 +75,7 @@ jobs:
         image: hardened-vsphere-csi-syncer
         make-target: push-image-syncer
         platforms: linux/amd64
-        tag: ${{ github.event.release.tag_name }}
+        tag: ${{ env.RELEASE_TAG }}
         push-to-public: false
         push-to-prime: ${{ github.repository_owner == 'rancher' }}
         prime-repo: rancher
