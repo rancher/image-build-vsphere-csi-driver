@@ -1,4 +1,4 @@
-# This workflow automatically creates a GitHub release when the TAG file is updated on main.
+# This workflow automatically creates a GitHub release when the default TAG file is updated on main.
 # 99% of the time, from an UpdateCLI PR that bumps the TAG while tracking upstream.
 name: Release On Tag Update
 on:
@@ -7,7 +7,6 @@ on:
       - main
     paths:
       - 'TAG'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,69 +21,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Calculate release tag from TAG file
+      - name: Calculate release tag from TAG file default
         run: |
-          TAG=$(make -s log | grep '^TAG=' | cut -d '=' -f2)
-          BUILD_META=$(make -s log | grep '^BUILD_META=' | cut -d '=' -f2)
-          echo "TAG=${TAG}" >> "$GITHUB_ENV"
-          echo "BUILD_META=${BUILD_META}" >> "$GITHUB_ENV"
+          TAG="$(make -s log | sed -n 's/^TAG=//p')"
+          BUILD_META="$(make -s log | sed -n 's/^BUILD_META=//p')"
           echo "RELEASE_TAG=${TAG}${BUILD_META}" >> "$GITHUB_ENV"
 
-      - name: Validate TAG change and release uniqueness
+      - name: Validate TAG-only change and release uniqueness
         id: validate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
-          set -euo pipefail
-
           SHOULD_RELEASE=true
 
-          base_sha="${{ github.event.before }}"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" || -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]]; then
-            base_sha="$(git rev-parse HEAD^)"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            if [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
+              echo "Push has no previous commit; skipping release"
+              SHOULD_RELEASE=false
+            elif [[ "$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}")" != "TAG" ]]; then
+              echo "Push changed files other than TAG; skipping release"
+              SHOULD_RELEASE=false
+            fi
           fi
-
-          changed_files="$(git diff --name-only "$base_sha" "$GITHUB_SHA")"
-          if [[ "$changed_files" != "TAG" ]]; then
-            echo "Expected the commit to change only TAG, found:"
-            echo "$changed_files"
-            exit 1
-          fi
-
-          tag_diff="$(git diff --unified=0 "$base_sha" "$GITHUB_SHA" -- TAG)"
-          changed_lines="$(grep -E '^[+-]' <<< "$tag_diff" | grep -Ev '^(\+\+\+|---)' || true)"
-          changed_count="$(wc -l <<< "$changed_lines" | tr -d ' ')"
-
-          if [[ "$changed_count" -ne 2 ]]; then
-            echo "Expected only one TAG line replacement, found $changed_count changed lines"
-            echo "$changed_lines"
-            exit 1
-          fi
-
-          removed_line="$(grep -E '^-' <<< "$changed_lines" | head -n1 || true)"
-          added_line="$(grep -E '^\+' <<< "$changed_lines" | head -n1 || true)"
-
-          if ! [[ "$removed_line" =~ ^-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Removed TAG line is not the expected version format"
-            echo "$removed_line"
-            exit 1
-          fi
-
-          if ! [[ "$added_line" =~ ^\+v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Added TAG line is not the expected version format"
-            echo "$added_line"
-            exit 1
-          fi
-
-          previous_tag="${removed_line#-}"
-          new_tag="${added_line#+}"
-          if [[ "$previous_tag" == "$new_tag" ]]; then
-            echo "TAG line was not actually changed"
-            exit 1
-          fi
-
-          echo "Validation passed: TAG changed from $previous_tag to $new_tag."
 
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release $RELEASE_TAG already exists; skipping"

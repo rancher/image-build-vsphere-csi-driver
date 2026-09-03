@@ -88,6 +88,5 @@ actions:
             strategy: auto
           labels:
             - updatecli
-            - github_actions
         scmid: default
 
