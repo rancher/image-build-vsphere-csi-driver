@@ -3,3 +3,4 @@
 #
 # Prefer the global policy: add broadly-applicable CVE bumps to global_overrides.json
 # in rancher/image-build-base. Keep an entry here only if it's specific to this repo.
+-replace github.com/cert-manager/cert-manager=github.com/cert-manager/cert-manager@v1.20.3
